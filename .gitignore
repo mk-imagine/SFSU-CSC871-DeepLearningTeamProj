@@ -1,0 +1,36 @@
+# MacOS
+.DS_Store
+*.jar
+
+# Conda Config
+.conda_config
+
+# vscode
+.vscode
+
+# PyTorch
+*.pt
+
+# Jupyter Notebooks
+/.ipynb_checkpoints
+
+# Data Files
+*.csv
+
+# LaTeX auxiliary build files
+*.log
+*.toc
+*.out
+*.aux
+*.gz
+*.bak
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.run.xml
+**/aux
+
+# Image Files
+**/images
