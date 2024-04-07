@@ -45,6 +45,7 @@ mixing multiple varying styles into the generated combination image.
 The style dataset that we will be working with is a collection of paintings from famous
 artists ranging from Monet to Pollack which we source from 
 \href{https://www.kaggle.com/datasets/ikarus777/best-artworks-of-all-time}{Kaggle}.
+This collection consists of a total of 8446 paintings from 50 different artists.
 Because we will be producing a generalized model, we will be experimenting with
 multiple artworks, which is why we need a variety of style sources.  As for our
 base or content images, we will be using various personal, public domain, and
@@ -70,6 +71,13 @@ effort, with each member contributing according to their respective expertise
 and editing. 
 
 \section{Discussion}
-
+Since we are building our project incrementally with the intention of creating a
+model that may have the flexibility to use different style loss methods and
+mixed style transfer, we will need to employ good software design practices with
+extensibility and flexibility in mind.  By doing this, we should be able to
+implement our primary goal and then build upon it with very little to no
+refactoring as our project progresses.  Similarly, if time does not permit us to
+expand the project, we will have the option to abandon the more ambitious
+portions without affecting the initial parts of the project.
 
 \end{document}
