@@ -9,6 +9,7 @@ import torchvision.models as models
 import os
 import copy
 from pathlib import Path
+from typing import Callable
 
 device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -16,13 +17,19 @@ device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.ba
 imsize = 512 if torch.cuda.is_available() else 256 if torch.backends.mps.is_available() else 128
 
 # transforms img into a torch tensor
-img_transformer = transforms.Compose([transforms.Resize(imsize), transforms.ToTensor()])  
+img_transformer = transforms.Compose([transforms.Resize((imsize, imsize)), transforms.ToTensor()])  
+
+class ImageLoader:
+    def __init__(self, image):
+        self.image = image
+
+    def to_tensor(self):
+        self.image = Image.open(self.image).resize()
 
 # Helper function
 def image_loader(image_name, size):
     image = Image.open(image_name)
-    image = image.resize(size)
-    image = img_transformer(image).unsqueeze(0)
+    image = img_transformer(image).unsqueeze(0)  # Not sure if we need to unsqueeze (and squeeze on line 45)
     return image.to(device, torch.float)
 
 # Get the directory of the script file
@@ -35,7 +42,7 @@ content_image_dir = Path(script_dir, 'images/content')
 # Load the images
 style_img = image_loader(Path(style_image_dir, "style.jpg"), (imsize, imsize))
 content_img = image_loader(Path(content_image_dir, "content.jpg"), (imsize, imsize))
-assert style_img.size() == content_img.size(), "we need to import style and content images of the same size"
+assert style_img.size() == content_img.size(), "style and content images must be the same size"
 
 unloader = transforms.ToPILImage()
 
@@ -60,10 +67,10 @@ class ContentLoss(nn.Module):
         return input
 
 def gram_matrix(input):
-    a, b, c, d = input.size()  
-    features = input.view(a * b, c * d)  
+    a, channels, height, width = input.size()  
+    features = input.view(a * channels, height * width)  
     G = torch.mm(features, features.t())  
-    return G.div(a * b * c * d)
+    return G.div(a * channels * height * width)
 
 class StyleLoss(nn.Module):
     def __init__(self, target_feature):
@@ -75,23 +82,23 @@ class StyleLoss(nn.Module):
         self.loss = F.mse_loss(G, self.target)
         return input
 
-# Importing the VGG 19 model
-cnn = models.vgg19(pretrained=True).features.to(device).eval()
+# # Importing the VGG 19 model
+# cnn = models.vgg19(pretrained=True).features.to(device).eval()
 
-cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
-cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
+# cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
+# cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
 
-class Normalization(nn.Module):
-    def __init__(self, mean, std):
-        super(Normalization, self).__init__()
-        self.mean = torch.tensor(mean).view(-1, 1, 1)
-        self.std = torch.tensor(std).view(-1, 1, 1)
+# class Normalization(nn.Module):
+#     def __init__(self, mean, std):
+#         super(Normalization, self).__init__()
+#         self.mean = torch.tensor(mean).view(-1, 1, 1)
+#         self.std = torch.tensor(std).view(-1, 1, 1)
 
-    def forward(self, img):
-        return (img - self.mean) / self.std
+#     def forward(self, img):
+#         return (img - self.mean) / self.std
 
-content_layers_default = ['conv_4']
-style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
+# content_layers_default = ['conv_4']
+# style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
 
 # def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
 #                                style_img, content_img,
