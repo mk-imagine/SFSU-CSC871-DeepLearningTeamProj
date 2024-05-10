@@ -2,11 +2,11 @@
 .DS_Store
 *.jar
 
-# Conda Config
-.conda_config
-
 # vscode
 .vscode
+
+# virtual environments
+.venv
 
 # PyTorch
 *.pt
