@@ -1,7 +1,7 @@
 import copy
 from pathlib import Path
 from typing import Callable
-from tqdm.auto import tqdm, trange
+from tqdm.auto import tqdm
 
 import torch
 import torch.nn as nn
@@ -83,7 +83,7 @@ def get_style_model_and_losses(pretrained_cnn: nn.Sequential,
             style_losses.append(style_loss)
 
     for i in range(len(model) - 1, -1, -1):
-        if isinstance(model[i], ContentLoss) or isinstance(model[i], GramLoss):
+        if isinstance(model[i], Loss):
             break
 
     model = model[:(i + 1)]
@@ -102,8 +102,9 @@ def run_style_transfer(pretrained_cnn, content_img, style_img, input_img, num_st
     model, style_losses, content_losses = get_style_model_and_losses(pretrained_cnn,
                                                                      content_img,
                                                                      style_img,
-                                                                     ContentLoss,
-                                                                     GramLoss,)
+                                                                     MSELoss,
+                                                                     GramLoss,
+                                                                     )
     
     optimizer = get_input_optimizer(input_img)
 

@@ -26,7 +26,7 @@ def extract_features(img: torch.Tensor, model: torch.nn.Module, model_layers: li
             feature_maps.append(feature_map.clone())
     return feature_maps
 
-# class ContentLoss():
+# class MSELoss():
 #     def __init__(self, target_img: torch.Tensor, target_layers: list[int] = [18, 25]):
 #         self.target_layers = target_layers
 #         with torch.no_grad():
@@ -37,12 +37,11 @@ def extract_features(img: torch.Tensor, model: torch.nn.Module, model_layers: li
 #         return sum(layers_mse)
 
 class Loss(nn.Module):
-    def __init__(self, target: torch.Tensor):
-        super(nn.Module, self).__init__()
+    pass
 
-class ContentLoss(Loss):
+class MSELoss(Loss):
     def __init__(self, target: torch.Tensor):
-        super(ContentLoss, self).__init__()
+        super(MSELoss, self).__init__()
         self.target = target.detach()
 
     def forward(self, input: torch.Tensor):
