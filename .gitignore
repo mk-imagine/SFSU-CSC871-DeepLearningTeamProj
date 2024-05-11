@@ -11,8 +11,11 @@
 # PyTorch
 *.pt
 
+# Python
+__pycache__
+
 # Jupyter Notebooks
-/.ipynb_checkpoints
+.ipynb_checkpoints
 
 # Data Files
 *.csv
