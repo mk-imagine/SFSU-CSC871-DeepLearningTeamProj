@@ -65,22 +65,24 @@ class GramLoss(Loss):
         return G.div(channels * height * width)
     
 class SlicedWassersteinLoss(Loss):
-    def __init__(self, target: torch.Tensor, scalar: float = 2e-5):
+    def __init__(self, target: torch.Tensor, scalar: float = 2e-4):
         super().__init__()
-        self.target = self.__loss(target).detach()
+        self.target = target.detach()
         self.scalar = scalar
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        self.loss = F.mse_loss(self.__loss(input), self.target) * self.scalar
+        self.loss = self.__loss(input) * self.scalar
         return input
 
-    def __loss(self, input: torch.Tensor, target: torch.Tensor, proj_n = 32) -> torch.Tensor:
+    # def __loss(self, input: torch.Tensor, target: torch.Tensor, proj_n = 32)
+    # -> torch.Tensor:
+    def __loss(self, input: torch.Tensor, proj_n = 32) -> torch.Tensor:
         height, width = input.shape[-2:]
         projection = F.normalize(torch.randn(height, proj_n).to(device), dim = 0)
         input_proj = self.__sort_projections(input, projection)
-        target_proj = self.__sort_projections(target, projection)
-        target_interpolated = F.interpolate(target_proj, (height, width), mode = "nearest")
-        return input_proj - target_interpolated
+        target_proj = self.__sort_projections(self.target, projection)
+        target_interpolated = F.interpolate(target_proj, height, mode = "nearest")
+        return (input_proj - target_interpolated).square().sum()
 
     def __sort_projections(self, source, projections) -> torch.Tensor:
         return torch.einsum('bcn,cp->bpn', source, projections).sort()[0]

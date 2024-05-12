@@ -150,7 +150,7 @@ def run_style_transfer(pretrained_cnn, content_img, style_img, input_img,
     return input_img, run
 
 if __name__ == "__main__":
-    output, run = run_style_transfer(vgg16, content_img, style_img, content_img, MSELoss, GramLoss, num_steps=60)
+    output, run = run_style_transfer(vgg16, content_img, style_img, content_img, MSELoss, SlicedWassersteinLoss, num_steps=500)
 
     plt.figure()
     imshow(output, title='Output Image')
