@@ -9,8 +9,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torchvision.models as models
 
-from imagehandler import *
-from lossfunctions import *
+from imagehandlerV2 import *
+from lossfunctionsV2 import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -21,12 +21,12 @@ imsize = 512 if torch.cuda.is_available() else 256 if torch.backends.mps.is_avai
 script_dir = Path(__file__).resolve().parent
 
 # Construct the paths to the image files
-style_image_dir = Path(script_dir, 'images/styles')
+style_image_dir = Path(script_dir, 'images/style')
 content_image_dir = Path(script_dir, 'images/content')
 
 # Load the images
-style_img = load_image(Path(style_image_dir, "style.jpg"), (imsize, imsize))
-content_img = load_image(Path(content_image_dir, "content.jpg"), (imsize, imsize))
+style_img = load_image(Path(style_image_dir, "picasso.jpg"), (imsize, imsize))
+content_img = load_image(Path(content_image_dir, "dancing.jpg"), (imsize, imsize))
 assert style_img.size() == content_img.size(), "style and content images must be the same size"
 
 # Importing the VGG 16 model
@@ -154,9 +154,9 @@ def run_style_transfer(pretrained_cnn, content_img, style_img, input_img,
 
 if __name__ == "__main__":
 
-    epochs = 500
+    epochs = 250
 
-    output, run = run_style_transfer(vgg16, content_img, style_img, content_img, MSELoss, SlicedWassersteinLoss, num_steps = epochs)
+    output, run = run_style_transfer(vgg16, content_img, style_img, content_img, MSELoss, GramLoss, num_steps = epochs)
 
     plt.figure()
 

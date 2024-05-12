@@ -59,8 +59,8 @@ class GramLoss(Loss):
         return input
     
     def __loss(self, input: torch.Tensor) -> torch.Tensor:
-        channels, height, width = input.shape
-        features = input.view(channels, height * width)  
+        a, channels, height, width = input.shape
+        features = input.view(a * channels, height * width)  
         G = torch.mm(features, features.t())  
         return G.div(channels * height * width)
     

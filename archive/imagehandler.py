@@ -15,11 +15,11 @@ def load_image(image_name: str, size: tuple[int, int] = None) -> torch.Tensor:
     else:
         height, width = size
         transform = v2.Compose([v2.Resize((height, width)), v2.ToTensor(), normalize])
-    image = transform(image)
+    image = transform(image).unsqueeze(0)
     return image.to(device, torch.float)
 
 def imshow(tensor, title=None):
-    image_t = tensor.cpu().clone()
+    image_t = tensor.cpu().clone().squeeze(0)
     transform_to_image = v2.ToPILImage()
     plt.imshow(transform_to_image(image_t))
     if title is not None:
