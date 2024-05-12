@@ -38,6 +38,7 @@ style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
 def get_style_model_and_losses(pretrained_cnn: nn.Sequential,
                                content_img: torch.Tensor,
                                style_img: torch.Tensor,
+                               input_img: torch.Tensor,
                                C_loss: Loss,
                                S_loss: Loss,
                                content_layers: list[str] = content_layers_default,
@@ -71,14 +72,14 @@ def get_style_model_and_losses(pretrained_cnn: nn.Sequential,
         model.add_module(name, layer)
 
         if name in content_layers:
-            target = model(content_img).detach()
-            content_loss = C_loss(target)
+            content = model(content_img).detach()
+            content_loss = C_loss(content)
             model.add_module("content_loss_{}".format(i), content_loss)
             content_losses.append(content_loss)
 
         if name in style_layers:
-            target_feature = model(style_img).detach()
-            style_loss = S_loss(target_feature)
+            style = model(style_img).detach()
+            style_loss = S_loss(style)
             model.add_module("style_loss_{}".format(i), style_loss)
             style_losses.append(style_loss)
 
@@ -103,9 +104,11 @@ def run_style_transfer(pretrained_cnn, content_img, style_img, input_img,
     model, style_losses, content_losses = get_style_model_and_losses(pretrained_cnn,
                                                                      content_img,
                                                                      style_img,
+                                                                     input_img,
                                                                      C_loss,
                                                                      S_loss,
                                                                      )
+    
     
     optimizer = get_input_optimizer(input_img)
 
@@ -135,7 +138,7 @@ def run_style_transfer(pretrained_cnn, content_img, style_img, input_img,
         run.append((run[0], 
                     content_score.item(), 
                     style_score.item(), 
-                    input_img.data.clamp_(0, 1) if run[0] % 5 == 0 else None))
+                    input_img.data.clamp_(0, 1) if run[0] % 20 == 0 else None))
 
         return style_score + content_score
 
@@ -150,10 +153,18 @@ def run_style_transfer(pretrained_cnn, content_img, style_img, input_img,
     return input_img, run
 
 if __name__ == "__main__":
-    output, run = run_style_transfer(vgg16, content_img, style_img, content_img, MSELoss, SlicedWassersteinLoss, num_steps=500)
+
+    epochs = 500
+
+    output, run = run_style_transfer(vgg16, content_img, style_img, content_img, MSELoss, SlicedWassersteinLoss, num_steps = epochs)
 
     plt.figure()
-    imshow(output, title='Output Image')
+
+    for i, result in enumerate(run):
+        if isinstance(result, int):
+            continue
+        if result[3] is not None:
+            imshow(result[3])
 
     plt.ioff()
     plt.show()

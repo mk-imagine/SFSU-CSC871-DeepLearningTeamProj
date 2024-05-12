@@ -8,12 +8,13 @@ device = torch.device("cuda" if torch.cuda.is_available() \
                       else "cpu")
 
 def load_image(image_name: str, size: tuple[int, int] = None) -> torch.Tensor:
+    normalize = v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]).to(device)
     image = Image.open(image_name)
     if size is None:
-        transform = v2.Compose([v2.ToTensor()])
+        transform = v2.Compose([v2.ToTensor(), normalize])
     else:
         height, width = size
-        transform = v2.Compose([v2.Resize((height, width)), v2.ToTensor()])
+        transform = v2.Compose([v2.Resize((height, width)), v2.ToTensor(), normalize])
     image = transform(image)
     return image.to(device, torch.float)
 
