@@ -94,7 +94,8 @@ def get_input_optimizer(input_img):
     optimizer = optim.LBFGS([input_img.requires_grad_()])
     return optimizer
 
-def run_style_transfer(pretrained_cnn, content_img, style_img, input_img, num_steps=300,
+def run_style_transfer(pretrained_cnn, content_img, style_img, input_img, 
+                       C_loss : Loss, S_loss: Loss, num_steps=300,
                        style_weight=1000000, content_weight=1):
     
     print('Building the style transfer model..')
@@ -102,8 +103,8 @@ def run_style_transfer(pretrained_cnn, content_img, style_img, input_img, num_st
     model, style_losses, content_losses = get_style_model_and_losses(pretrained_cnn,
                                                                      content_img,
                                                                      style_img,
-                                                                     MSELoss,
-                                                                     GramLoss,
+                                                                     C_loss,
+                                                                     S_loss,
                                                                      )
     
     optimizer = get_input_optimizer(input_img)
@@ -148,10 +149,11 @@ def run_style_transfer(pretrained_cnn, content_img, style_img, input_img, num_st
 
     return input_img, run
 
-output, run = run_style_transfer(vgg16, content_img, style_img, content_img, num_steps=60)
+if __name__ == "__main__":
+    output, run = run_style_transfer(vgg16, content_img, style_img, content_img, MSELoss, GramLoss, num_steps=60)
 
-plt.figure()
-imshow(output, title='Output Image')
+    plt.figure()
+    imshow(output, title='Output Image')
 
-plt.ioff()
-plt.show()
+    plt.ioff()
+    plt.show()

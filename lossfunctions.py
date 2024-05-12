@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Callable
+from abc import abstractmethod
 
 import torchvision
 from torchvision.transforms import v2
@@ -37,31 +38,55 @@ def extract_features(img: torch.Tensor, model: torch.nn.Module, model_layers: li
 #         return sum(layers_mse)
 
 class Loss(nn.Module):
-    pass
+    ...
 
 class MSELoss(Loss):
     def __init__(self, target: torch.Tensor):
-        super(MSELoss, self).__init__()
+        super().__init__()
         self.target = target.detach()
 
-    def forward(self, input: torch.Tensor):
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         self.loss = F.mse_loss(input, self.target)
         return input
     
 class GramLoss(Loss):
     def __init__(self, target: torch.Tensor):
-        super(GramLoss, self).__init__()
-        self.target = self.__gram_loss(target).detach()
+        super().__init__()
+        self.target = self.__loss(target).detach()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        self.loss = F.mse_loss(self.__gram_loss(input), self.target)
+        self.loss = F.mse_loss(self.__loss(input), self.target)
         return input
     
-    def __gram_loss(self, input: torch.Tensor) -> torch.Tensor:
-        channels, height, width = input.size()
+    def __loss(self, input: torch.Tensor) -> torch.Tensor:
+        channels, height, width = input.shape
         features = input.view(channels, height * width)  
         G = torch.mm(features, features.t())  
         return G.div(channels * height * width)
+    
+class SlicedWassersteinLoss(Loss):
+    def __init__(self, target: torch.Tensor, scalar: float = 2e-5):
+        super().__init__()
+        self.target = self.__loss(target).detach()
+        self.scalar = scalar
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        self.loss = F.mse_loss(self.__loss(input), self.target) * self.scalar
+        return input
+
+    def __loss(self, input: torch.Tensor, target: torch.Tensor, proj_n = 32) -> torch.Tensor:
+        height, width = input.shape[-2:]
+        projection = F.normalize(torch.randn(height, proj_n).to(device), dim = 0)
+        input_proj = self.__sort_projections(input, projection)
+        target_proj = self.__sort_projections(target, projection)
+        target_interpolated = F.interpolate(target_proj, (height, width), mode = "nearest")
+        return input_proj - target_interpolated
+
+    def __sort_projections(self, source, projections) -> torch.Tensor:
+        return torch.einsum('bcn,cp->bpn', source, projections).sort()[0]
+
+class VincentLoss(Loss):
+    ...
 
 if __name__ == "__main__":
     from imagehandler import *
