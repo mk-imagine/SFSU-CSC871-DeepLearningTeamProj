@@ -9,8 +9,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torchvision.models as models
 
-from imagehandlerV2 import *
-from lossfunctionsV2 import *
+from imagehandler import *
+from lossfunctions import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
