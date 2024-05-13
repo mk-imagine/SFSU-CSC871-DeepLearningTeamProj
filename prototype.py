@@ -9,6 +9,13 @@ import torchvision.models as models
 import os
 import copy
 
+import numpy as np
+#import ssl
+#ssl._create_default_https_context = ssl._create_unverified_context
+
+
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 # desired size of the output image
@@ -74,6 +81,12 @@ class StyleLoss(nn.Module):
         self.loss = F.mse_loss(G, self.target)
         return input
 
+
+
+
+
+
+
 # Importing the VGG 19 model
 cnn = models.vgg19(pretrained=True).features.to(device).eval()
 
@@ -89,8 +102,8 @@ class Normalization(nn.Module):
     def forward(self, img):
         return (img - self.mean) / self.std
 
-content_layers_default = ['conv_4']
-style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
+content_layers_default = ['conv_8']
+style_layers_default = ['conv_4', 'conv_5', 'conv_6', 'conv_7', 'conv_8']
 
 def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
                                style_img, content_img,
@@ -142,7 +155,12 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
 
     return model, style_losses, content_losses
 
+#--Use content image as starting generated image
 input_img = content_img.clone()
+
+#--Use noise image as starting generated image
+# Generate random pixel values in the range [0, 1]
+# input_img = torch.randn_like(input_img)
 
 def get_input_optimizer(input_img):
     optimizer = optim.LBFGS([input_img.requires_grad_()])
@@ -150,7 +168,7 @@ def get_input_optimizer(input_img):
 
 def run_style_transfer(cnn, normalization_mean, normalization_std,
                        content_img, style_img, input_img, num_steps=300,
-                       style_weight=1000000, content_weight=1):
+                       style_weight=10000000, content_weight=10):
     print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,
         normalization_mean, normalization_std, style_img, content_img)
@@ -179,7 +197,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
         loss.backward()
 
         run[0] += 1
-        if run[0] % 50 == 0:
+        if run[0] % 10 == 0:
             print("run {}:".format(run))
             print('Style Loss : {:4f} Content Loss: {:4f}'.format(
                 style_score.item(), content_score.item()))
@@ -187,7 +205,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 
         return style_score + content_score
 
-    while run[0] <= num_steps:
+    while run[0] < num_steps:
         optimizer.step(closure)
 
     input_img.data.clamp_(0, 1)
@@ -195,7 +213,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     return input_img
 
 output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std,
-                            content_img, style_img, input_img, num_steps=3000)
+                            content_img, style_img, input_img, num_steps=2000)
 
 plt.figure()
 imshow(output, title='Output Image')
