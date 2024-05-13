@@ -91,7 +91,7 @@ class VincentLoss(Loss):
     ...
 
 if __name__ == "__main__":
-    from imagehandler import *
+    from imagehandling import *
 
     script_dir = Path(__file__).resolve().parent
     style_image_dir = Path(script_dir, 'images/styles')

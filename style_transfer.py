@@ -8,7 +8,7 @@ import torch.optim as optim
 from torchvision.models import vgg19, VGG19_Weights
 from torchvision.utils import save_image
 
-from imagehandler import *
+from imagehandling import *
 from lossfunctions import *
 
 # set device
