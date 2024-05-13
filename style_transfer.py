@@ -8,7 +8,7 @@ import torch.optim as optim
 from torchvision.models import vgg19, VGG19_Weights
 from torchvision.utils import save_image
 
-from imagehandler import *
+from imagehandling import *
 from lossfunctions import *
 
 # set device
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     s_layers = ['conv_4', 'conv_8', 'conv_12', 'conv_14', 'conv_16']
 
     # GramMatrixLoss: content_weight = 1, style_weight = 1000000
-    epochs = 1000
+    epochs = 100
 
     metadata = []
 
@@ -307,9 +307,9 @@ if __name__ == "__main__":
     imshow(swl_output)
     imshow(wgl_output)
 
-    save_image(gm_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_gm.jpg"))
-    save_image(swl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_swl.jpg"))
-    save_image(wgl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_wgl.jpg"))
+    save_image(gm_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_gm_{epochs}.jpg"))
+    save_image(swl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_swl_{epochs}.jpg"))
+    save_image(wgl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_wgl_{epochs}.jpg"))
 
     for md, name in zip(metadata, ["gm", "sql", "wgl"]):
-        torch.save(md, Path(script_dir, "loss data", f"{content_img[:-4]}-{style_img[:-4]}_{name}.pt"))
+        torch.save(md, Path(script_dir, "loss data", f"{content_img[:-4]}-{style_img[:-4]}_{name}_{epochs}.pt"))

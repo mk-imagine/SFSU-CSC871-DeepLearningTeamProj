@@ -17,7 +17,10 @@ __pycache__
 # Jupyter Notebooks
 .ipynb_checkpoints
 
-# Data Files
+# Data and Archives
+archive
+loss data
+models
 *.csv
 
 # LaTeX auxiliary build files
