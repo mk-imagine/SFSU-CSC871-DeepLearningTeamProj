@@ -261,31 +261,36 @@ if __name__ == "__main__":
     c_layers = ['conv_4']
     s_layers = ['conv_4', 'conv_8', 'conv_12', 'conv_14', 'conv_16']
 
-    # # GramMatrixLoss: content_weight = 1, style_weight = 1000000
-    # epochs = 1000
-    # output_img_t = content_img_t.clone()
-    # gm_output, gm_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
-    #                                             optim.LBFGS, MSELoss, GramMatrixLoss,
-    #                                             epochs, content_weight=1, style_weight = 1000000,
-    #                                             content_layers = c_layers,
-    #                                             style_layers = s_layers
-    #                                            )
+    # GramMatrixLoss: content_weight = 1, style_weight = 1000000
+    epochs = 1000
+
+    metadata = []
+
+    output_img_t = content_img_t.clone()
+    gm_output, gm_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
+                                                optim.LBFGS, MSELoss, GramMatrixLoss,
+                                                epochs, content_weight=1, style_weight = 1000000,
+                                                content_layers = c_layers,
+                                                style_layers = s_layers
+                                               )
+    metadata.append(gm_metadata)
     
-    # # SlicedWasserSteinLoss: content_weight = 1, style_weight = 100,
-    # # scalar = 2e-5, proj_n = 32, epochs = 400
-    # # epochs = 400
-    # output_img_t = content_img_t.clone()
-    # swl_output, swl_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
-    #                                               optim.LBFGS, MSELoss, SlicedWassersteinLoss,
-    #                                               epochs, content_weight=1, style_weight = 100,
-    #                                               content_layers = c_layers,
-    #                                               style_layers = s_layers,
-    #                                               scalar = 2e-5, proj_n = 32
-    #                                              )
-    
+    # SlicedWasserSteinLoss: content_weight = 1, style_weight = 100,
+    # scalar = 2e-5, proj_n = 32, epochs = 400
+    # epochs = 400
+    output_img_t = content_img_t.clone()
+    swl_output, swl_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
+                                                  optim.LBFGS, MSELoss, SlicedWassersteinLoss,
+                                                  epochs, content_weight=1, style_weight = 100,
+                                                  content_layers = c_layers,
+                                                  style_layers = s_layers,
+                                                  scalar = 2e-5, proj_n = 32
+                                                 )
+    metadata.append(swl_metadata)
+
     # L2WassersteinGaussianLoss: content_weight = 1, style_weight = 1000,
     # scalar = 2e-5, epochs = 400
-    epochs = 200
+    # epochs = 200
     output_img_t = content_img_t.clone()
     wgl_output, wgl_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
                                                   optim.LBFGS, MSELoss, L2WassersteinGaussianLoss,
@@ -294,13 +299,17 @@ if __name__ == "__main__":
                                                   style_layers = s_layers,
                                                   scalar = 2e-5
                                                  )
+    metadata.append(wgl_metadata)
     
     imshow(content_img_t)
     imshow(style_img_t)
-    # imshow(gm_output)
-    # imshow(swl_output)
+    imshow(gm_output)
+    imshow(swl_output)
     imshow(wgl_output)
 
-    # save_image(gm_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_gm.jpg"))
-    # save_image(swl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_swl.jpg"))
+    save_image(gm_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_gm.jpg"))
+    save_image(swl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_swl.jpg"))
     save_image(wgl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_wgl.jpg"))
+
+    for md, name in zip(metadata, ["gm", "sql", "wgl"]):
+        torch.save(md, Path(script_dir, "loss data", f"{content_img[:-4]}-{style_img[:-4]}_{name}.pt"))
