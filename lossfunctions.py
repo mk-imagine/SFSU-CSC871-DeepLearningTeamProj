@@ -63,6 +63,7 @@ class GramMatrixLoss(Loss):
 
         # compute gram product
         gram_product = torch.mm(feature_map, feature_map.t())
+        # print("gram: ", gram_product.shape, "input: ", input.shape)
 
         # must divide the gram product by the number of features to normalize the
         # values since a large number of layers since the values scale by the

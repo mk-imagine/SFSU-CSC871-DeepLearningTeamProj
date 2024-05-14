@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from torchvision.models import vgg19, VGG19_Weights
+from torchvision.models import vgg16, vgg19, VGG19_Weights
 from torchvision.utils import save_image
 
 from imagehandling import *
@@ -160,7 +160,7 @@ def generate_image(model: nn.Sequential,
 
     run = [0]
 
-    pbar = tqdm(total = epochs / optimizer.state_dict()["param_groups"][0]["max_iter"])
+    pbar = tqdm(total = epochs / optimizer.state_dict()["param_groups"][0]["max_iter"] + 1)
     while run[0] <= epochs:
 
         def closure():
@@ -242,8 +242,8 @@ def build_model_and_generate_image(model: nn.Sequential,
 
 if __name__ == "__main__":
     
-    style_img = "picasso.jpg"
-    content_img = "dancing.jpg"
+    style_img = "flowers.jpg"
+    content_img = "messi.jpg"
 
     # Load the images
     content_img_t = load_image(Path(content_image_dir, content_img), (img_size, img_size))
@@ -266,50 +266,52 @@ if __name__ == "__main__":
 
     metadata = []
 
-    output_img_t = content_img_t.clone()
-    gm_output, gm_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
-                                                optim.LBFGS, MSELoss, GramMatrixLoss,
-                                                epochs, content_weight=1, style_weight = 1000000,
-                                                content_layers = c_layers,
-                                                style_layers = s_layers
-                                               )
-    metadata.append(gm_metadata)
+    # output_img_t = content_img_t.clone()
+    # gm_output, gm_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
+    #                                             optim.LBFGS, MSELoss, GramMatrixLoss,
+    #                                             epochs, content_weight=1, style_weight = 1000000,
+    #                                             content_layers = c_layers,
+    #                                             style_layers = s_layers
+    #                                            )
+    # metadata.append(gm_metadata)
     
     # SlicedWasserSteinLoss: content_weight = 1, style_weight = 100,
     # scalar = 2e-5, proj_n = 32, epochs = 400
     # epochs = 400
-    output_img_t = content_img_t.clone()
-    swl_output, swl_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
-                                                  optim.LBFGS, MSELoss, SlicedWassersteinLoss,
-                                                  epochs, content_weight=1, style_weight = 100,
-                                                  content_layers = c_layers,
-                                                  style_layers = s_layers,
-                                                  scalar = 2e-6, proj_n = 32
-                                                 )
-    metadata.append(swl_metadata)
+    for i in range(1000,5000,100):
+        output_img_t = content_img_t.clone()
+        swl_output, swl_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
+                                                    optim.LBFGS, MSELoss, SlicedWassersteinLoss,
+                                                    epochs, content_weight=1, style_weight = 10000,
+                                                    content_layers = c_layers,
+                                                    style_layers = s_layers,
+                                                    scalar = 2e-6, proj_n = 32
+                                                    )
+        metadata.append(swl_output)
 
     # L2WassersteinGaussianLoss: content_weight = 1, style_weight = 1000,
     # scalar = 2e-5, epochs = 400
     # epochs = 200
-    output_img_t = content_img_t.clone()
-    wgl_output, wgl_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
-                                                  optim.LBFGS, MSELoss, L2WassersteinGaussianLoss,
-                                                  epochs, content_weight=1, style_weight = 1000,
-                                                  content_layers = c_layers,
-                                                  style_layers = s_layers,
-                                                  scalar = 2e-6
-                                                 )
-    metadata.append(wgl_metadata)
+    # output_img_t = content_img_t.clone()
+    # wgl_output, wgl_metadata = build_model_and_generate_image(pretrained_cnn, content_img_t, style_img_t, output_img_t,
+    #                                               optim.LBFGS, MSELoss, L2WassersteinGaussianLoss,
+    #                                               epochs, content_weight=1, style_weight = 1000,
+    #                                               content_layers = c_layers,
+    #                                               style_layers = s_layers,
+    #                                               scalar = 2e-6
+    #                                              )
+    # metadata.append(wgl_metadata)
     
     imshow(content_img_t)
     imshow(style_img_t)
-    imshow(gm_output)
-    imshow(swl_output)
-    imshow(wgl_output)
+    # imshow(gm_output)
+    for i in metadata:
+        imshow(i)
+    # imshow(wgl_output)
 
-    save_image(gm_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_gm_{epochs}.jpg"))
-    save_image(swl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_swl_{epochs}.jpg"))
-    save_image(wgl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_wgl_{epochs}.jpg"))
+    # save_image(gm_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_gm_{epochs}.jpg"))
+    # save_image(swl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_swl_{epochs}.jpg"))
+    # save_image(wgl_output, Path(output_image_dir, f"{content_img[:-4]}-{style_img[:-4]}_wgl_{epochs}.jpg"))
 
-    for md, name in zip(metadata, ["gm", "sql", "wgl"]):
-        torch.save(md, Path(script_dir, "loss data", f"{content_img[:-4]}-{style_img[:-4]}_{name}_{epochs}.pt"))
+    # for md, name in zip(metadata, ["gm", "sql", "wgl"]):
+    #     torch.save(md, Path(script_dir, "loss data", f"{content_img[:-4]}-{style_img[:-4]}_{name}_{epochs}.pt"))
