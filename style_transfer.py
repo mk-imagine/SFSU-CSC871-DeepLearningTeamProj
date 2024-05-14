@@ -191,7 +191,7 @@ def generate_image(model: nn.Sequential,
                     style_score.item(), 
                     output_img.clone() if run[0] % 20 == 0 else None))
             
-            pbar.set_description(f"Content Loss: {run[run[0]][1]:.4f}  Style Loss: {run[run[0]][1]:.4f}")
+            pbar.set_description(f"Content Loss: {run[run[0]][1]:10.2f}  Style Loss: {run[run[0]][1]:10.2f}")
 
             # if run[0] % optimizer.state_dict()["param_groups"][0]["max_iter"] == 0:
             #     print(f"Run: {run[0]}\nStyle Loss: {style_score.item()}   Content Loss: {content_score.item()}\n")
@@ -258,8 +258,8 @@ if __name__ == "__main__":
 
     vgg19_conv2d_layer_names = get_conv_layer_names(pretrained_cnn)
     
-    c_layers = ['conv_4']
-    s_layers = ['conv_4', 'conv_8', 'conv_12', 'conv_14', 'conv_16']
+    c_layers = ["conv_4"]
+    s_layers = ['conv_2', 'conv_4', 'conv_8', 'conv_12', 'conv_16']
 
     # GramMatrixLoss: content_weight = 1, style_weight = 1000000
     epochs = 100
@@ -284,7 +284,7 @@ if __name__ == "__main__":
                                                   epochs, content_weight=1, style_weight = 100,
                                                   content_layers = c_layers,
                                                   style_layers = s_layers,
-                                                  scalar = 2e-5, proj_n = 32
+                                                  scalar = 2e-6, proj_n = 32
                                                  )
     metadata.append(swl_metadata)
 
@@ -297,7 +297,7 @@ if __name__ == "__main__":
                                                   epochs, content_weight=1, style_weight = 1000,
                                                   content_layers = c_layers,
                                                   style_layers = s_layers,
-                                                  scalar = 2e-5
+                                                  scalar = 2e-6
                                                  )
     metadata.append(wgl_metadata)
     

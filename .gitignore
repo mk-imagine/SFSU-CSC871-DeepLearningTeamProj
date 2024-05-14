@@ -21,6 +21,7 @@ __pycache__
 archive
 loss data
 models
+reference\ docs
 *.csv
 
 # LaTeX auxiliary build files

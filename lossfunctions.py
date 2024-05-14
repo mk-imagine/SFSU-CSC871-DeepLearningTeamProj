@@ -19,6 +19,9 @@ Base Loss Class
 class Loss(nn.Module):
     ...
 
+"""
+MSELoss
+"""
 class MSELoss(Loss):
     def __init__(self, target: torch.Tensor):
         super(MSELoss, self).__init__()
